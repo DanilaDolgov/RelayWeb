@@ -1,9 +1,16 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 
-from database import init_db, get_connection
+from src.database import init_db, get_connection
+import os
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(__file__)
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 
 # -----------------------------------------------------------------------------
 # Работа с БД
@@ -301,17 +308,3 @@ def save_settings():
     conn.close()
 
     return jsonify(success=True)
-
-# -----------------------------------------------------------------------------
-# Запуск
-# -----------------------------------------------------------------------------
-
-if __name__ == "__main__":
-
-    init_db()
-
-    app.run(
-        host="0.0.0.0",
-        port=5001,
-        debug=True
-    )
