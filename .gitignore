@@ -1,0 +1,13 @@
+*.
+*.idea
+.idea
+.env
+venv
+__pycache__/
+*__pycache__/
+__pycache__
+.DS_Store
+*.env
+*minio_data/
+*session.session
+*user_session.sessionTEST.py

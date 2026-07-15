@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реле Управление</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root{
+
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#222;
+    --text2:#666;
+    --border:#ddd;
+
+}
+
+body.dark{
+
+    --bg:#181a1f;
+    --card:#24272e;
+    --text:#ffffff;
+    --text2:#aaaaaa;
+    --border:#3b3f47;
+
+}
+       body{
+    background:var(--bg);
+    color:var(--text);
+    transition:.25s;
+}
+
+.card{
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+}
+.card-title{
+    color:var(--text);
+}
+
+.card:hover{
+    transform:translateY(-4px);
+}
+
+.card-header{
+    height:6px;
+    padding:0;
+}
+
+.btn{
+    border-radius:10px;
+}
+
+.form-control{
+
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+
+}
+
+.form-control:focus{
+
+    background:var(--card);
+    color:var(--text);
+
+}
+
+.modal-content{
+    background:var(--card);
+    color:var(--text);
+}
+
+.text-muted{
+    color:var(--text2)!important;
+}
+
+.status-on{
+    color:#00d26a;
+    font-weight:bold;
+}
+
+.status-off{
+    color:#ff5555;
+    font-weight:bold;
+}
+
+.loading{
+    opacity:.5;
+}
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h2 class="fw-bold">
+        🚪 Relay Control
+    </h2>
+
+    <div class="d-flex gap-2">
+
+        <input
+            id="search"
+            class="form-control"
+            placeholder="🔍 Поиск">
+
+        <button
+            id="themeButton"
+            class="btn btn-outline-secondary"
+            onclick="toggleTheme()">
+            🌙
+        </button>
+
+        <button
+            class="btn btn-outline-secondary"
+            onclick="openSettings()">
+            ⚙
+        </button>
+
+        <button
+            class="btn btn-success"
+            onclick="showAddModal()">
+            ➕
+        </button>
+
+    </div>
+
+</div>
+
+    <div class="row" id="buttons-container"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Новая кнопка</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modal-id">
+                <div class="mb-3">
+                    <label>Название кнопки</label>
+                    <input type="text" id="modal-name" class="form-control">
+                </div>
+                <div class="row g-3">
+                    <div class="col-7">
+                        <label>IP-адрес</label>
+                        <input type="text" id="modal-ip" class="form-control">
+                    </div>
+                    <div class="col-5">
+                        <label>Реле №</label>
+                        <input type="number" id="modal-relay" class="form-control" min="1" max="32">
+                    </div>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-6">
+                        <label>Импульс (сек)</label>
+                        <input type="number" id="modal-time" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="col-6">
+                        <label>Пароль</label>
+                        <input type="text" id="modal-pwd" class="form-control" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="modal-save-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">⚙ Настройки</h5>
+                <button class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        🌙 Тема
+                    </label>
+
+                    <select
+                        id="setting-theme"
+                        class="form-select">
+
+                        <option value="light">
+                            Светлая
+                        </option>
+
+                        <option value="dark">
+                            Темная
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        ⟳ Обновление статуса (сек)
+                    </label>
+
+                    <input
+                        id="setting-refresh"
+                        class="form-control"
+                        type="number"
+                        value="7">
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        ⏱ Таймаут подключения (сек)
+                    </label>
+
+                    <input
+                        id="setting-timeout"
+                        class="form-control"
+                        type="number"
+                        value="2">
+
+                </div>
+
+                <div class="form-check">
+
+                    <input
+                        class="form-check-input"
+                        id="setting-toast"
+                        type="checkbox"
+                        checked>
+
+                    <label class="form-check-label">
+                        Показывать уведомления
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Отмена
+
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="saveSettings()">
+
+                    Сохранить
+
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let statusTimer = null;
+    let buttons = [];
+
+    async function loadButtons() {
+        try {
+            const res = await fetch('/api/buttons');
+            buttons = await res.json();
+        } catch(e) {
+            console.error("Не удалось загрузить кнопки");
+        }
+        renderButtons();
+    }
+
+    function renderButtons() {
+        const container = document.getElementById('buttons-container');
+        container.innerHTML = '';
+
+        buttons.forEach(btn => {
+            const card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 mb-3';
+            card.id = `card-${btn.id}`;
+            card.innerHTML = `
+                <div class="card h-100">
+
+    <div
+        class="card-header"
+        style="background:${btn.color||'#0d6efd'}">
+    </div>
+
+    <div class="card-body">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+    <h5 class="card-title">
+
+${btn.icon||'🚪'}
+
+${btn.name}
+
+</h5>
+
+    <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-primary"
+                onclick="editButton(${btn.id})"
+                title="Редактировать">
+            ✏️
+        </button>
+
+        <button class="btn btn-outline-danger"
+                onclick="deleteButton(${btn.id})"
+                title="Удалить">
+            🗑
+        </button>
+    </div>
+</div>
+                        <p class="text-muted small">IP: ${btn.ip} | Реле: ${btn.relay + 1}</p>
+
+                        <div class="mb-3" id="status-${btn.id}">
+                            <strong>Статус: </strong><span class="status-off">Загрузка...</span>
+                        </div>
+
+                        <div class="btn-group w-100" role="group">
+                            <button class="btn btn-success btn-sm" onclick="setRelay(${btn.id}, 1)">ВКЛ</button>
+                            <button class="btn btn-danger btn-sm" onclick="setRelay(${btn.id}, 0)">ВЫКЛ</button>
+                            <button class="btn btn-primary btn-sm" onclick="trigger(${btn.id})">Импульс ${btn.pulse_sec}с</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        updateAllStatuses();
+    }
+
+    async function updateAllStatuses() {
+        for (let btn of buttons) {
+            const statusEl = document.getElementById(`status-${btn.id}`);
+            if (!statusEl) continue;
+            const status = await getRelayStatus(btn.id);
+
+if (status.online) {
+    statusEl.innerHTML =
+        `<strong>Статус: </strong>
+         <span class="${status.relay ? 'status-on' : 'status-off'}">
+            ${status.relay ? '🟢 ВКЛ' : '⚪ ВЫКЛ'}
+         </span>`;
+} else {
+    statusEl.innerHTML =
+        `<strong>Статус: </strong>
+         <span class="status-off">
+            🔴 Нет связи
+         </span>`;
+}
+        }
+    }
+
+    async function getRelayStatus(id) {
+    try {
+        const res = await fetch(`/api/status/${id}`);
+        return await res.json();
+    } catch (e) {
+        return {
+            online: false,
+            relay: false
+        };
+    }
+}
+
+    function trigger(id) {
+        const btn = buttons.find(b => b.id === id);
+        const card = document.getElementById(`card-${id}`);
+        card.classList.add('loading');
+
+        fetch(`/api/button/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                updateAllStatuses();
+            })
+            .finally(() => {
+                card.classList.remove('loading');
+            });
+    }
+
+    function setRelay(id, state) {
+        const btn = buttons.find(b => b.id === id);
+        const card = document.getElementById(`card-${id}`);
+        card.classList.add('loading');
+
+        fetch(`/api/set_relay/${id}/${state}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+    setTimeout(updateAllStatuses, 300);
+})
+            .finally(() => {
+                card.classList.remove('loading');
+            });
+    }
+
+    function showAddModal() {
+        document.getElementById('modal-title').textContent = "Новая кнопка";
+        document.getElementById('modal-id').value = '';
+        document.getElementById('modal-name').value = "Новая кнопка";
+        document.getElementById('modal-ip').value = "192.168.1.100";
+        document.getElementById('modal-relay').value = "1";
+        document.getElementById('modal-time').value = "1";
+        document.getElementById('modal-pwd').value = "0";
+        document.getElementById('modal-save-btn').onclick = addButtonConfirm;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function editButton(id) {
+        const btn = buttons.find(b => b.id === id);
+        if (!btn) return;
+
+        document.getElementById('modal-title').textContent = "Редактировать кнопку";
+        document.getElementById('modal-id').value = btn.id;
+        document.getElementById('modal-name').value = btn.name;
+        document.getElementById('modal-ip').value = btn.ip;
+        document.getElementById('modal-relay').value = btn.relay + 1;
+        document.getElementById('modal-time').value = btn.pulse_sec;
+        document.getElementById('modal-pwd').value = btn.password;
+
+        document.getElementById('modal-save-btn').onclick = saveEditButton;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function addButtonConfirm() {
+        const data = getModalData();
+        fetch('/api/add_button', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(() => {
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            loadButtons();
+        });
+    }
+
+    function saveEditButton() {
+        const data = getModalData();
+        data.id = parseInt(document.getElementById('modal-id').value);
+
+        fetch('/api/edit_button', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(() => {
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            loadButtons();
+        });
+    }
+
+    function getModalData() {
+        return {
+            name: document.getElementById('modal-name').value,
+            ip: document.getElementById('modal-ip').value,
+            relay: parseInt(document.getElementById('modal-relay').value) - 1,
+            password: document.getElementById('modal-pwd').value,
+            pulse_sec: parseInt(document.getElementById('modal-time').value)
+        };
+    }
+
+    function deleteButton(id) {
+
+    const btn = buttons.find(b => b.id === id);
+
+    if (!confirm(`Удалить "${btn.name}"?`))
+        return;
+
+    fetch(`/api/delete_button/${id}`, {
+        method: 'DELETE'
+    })
+    .then(() => loadButtons());
+}
+
+
+    loadButtons();
+
+loadSettings();
+
+document
+.getElementById("search")
+.addEventListener("input", function(){
+
+    let value=this.value.toLowerCase();
+
+    document
+    .querySelectorAll("#buttons-container .col-md-6")
+    .forEach(card=>{
+
+        card.style.display=
+        card.innerText.toLowerCase().includes(value)
+        ? ""
+        : "none";
+
+    });
+
+});
+
+function loadTheme(){
+
+    let theme=localStorage.getItem("theme");
+
+    if(theme==="dark"){
+
+        document.body.classList.add("dark");
+        themeButton.innerHTML="☀";
+
+    }
+
+}
+
+function toggleTheme(){
+
+    let theme =
+        document.body.classList.contains("dark")
+        ? "light"
+        : "dark";
+
+    document.getElementById("setting-theme").value = theme;
+
+    saveSettings();
+
+}
+
+loadTheme();
+
+const SETTINGS_KEY = "relay_settings";
+
+function loadSettings(){
+
+    let s = JSON.parse(
+        localStorage.getItem(SETTINGS_KEY)
+        || "{}"
+    );
+
+    if(!s.theme)
+        s.theme="light";
+
+    if(!s.refresh)
+        s.refresh=7;
+
+    if(!s.timeout)
+        s.timeout=2;
+
+    if(s.toast===undefined)
+        s.toast=true;
+
+    document.getElementById("setting-theme").value=s.theme;
+    document.getElementById("setting-refresh").value=s.refresh;
+    document.getElementById("setting-timeout").value=s.timeout;
+    document.getElementById("setting-toast").checked=s.toast;
+
+    applyTheme(s.theme);
+
+}
+
+function saveSettings(){
+
+    let s={
+
+        theme:document.getElementById("setting-theme").value,
+
+        refresh:parseInt(
+            document.getElementById("setting-refresh").value
+        ),
+
+        timeout:parseInt(
+            document.getElementById("setting-timeout").value
+        ),
+
+        toast:document.getElementById("setting-toast").checked
+
+    };
+
+    localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify(s)
+    );
+
+    applyTheme(s.theme);
+
+    bootstrap.Modal
+        .getInstance(
+            document.getElementById("settingsModal")
+        )
+        .hide();
+
+}
+
+function openSettings(){
+
+    loadSettings();
+
+    new bootstrap.Modal(
+        document.getElementById("settingsModal")
+    ).show();
+
+}
+
+function applyTheme(theme){
+
+    if(theme==="dark"){
+
+        document.body.classList.add("dark");
+        themeButton.innerHTML="☀";
+
+    }
+    else{
+
+        document.body.classList.remove("dark");
+        themeButton.innerHTML="🌙";
+
+    }
+
+}
+
+
+function startStatusTimer(seconds){
+
+    if(statusTimer)
+        clearInterval(statusTimer);
+
+    statusTimer = setInterval(
+        updateAllStatuses,
+        seconds * 1000
+    );
+
+}
+
+async function loadSettings(){
+
+    const res = await fetch("/api/settings");
+
+    const s = await res.json();
+
+    document.getElementById("setting-theme").value=s.theme;
+
+    document.getElementById("setting-refresh").value=s.refresh_interval;
+
+    document.getElementById("setting-timeout").value=s.timeout;
+
+    document.getElementById("setting-toast").checked =
+        s.notifications==1;
+
+    applyTheme(s.theme);
+
+    startStatusTimer(s.refresh_interval);
+
+}
+
+
+async function saveSettings(){
+
+    const data={
+
+        theme:document.getElementById("setting-theme").value,
+
+        refresh_interval:parseInt(
+            document.getElementById("setting-refresh").value
+        ),
+
+        timeout:parseInt(
+            document.getElementById("setting-timeout").value
+        ),
+
+        notifications:
+            document.getElementById("setting-toast").checked
+            ?1
+            :0
+
+    };
+
+    await fetch("/api/settings",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(data)
+
+    });
+
+    applyTheme(data.theme);
+
+    startStatusTimer(data.refresh_interval);
+
+    bootstrap.Modal
+        .getInstance(
+            document.getElementById("settingsModal")
+        )
+        .hide();
+
+}
+
+
+</script>
+</body>
+</html>
