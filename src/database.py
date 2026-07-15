@@ -1,8 +1,19 @@
+import os
 import sqlite3
 from pathlib import Path
+import sys
+
+
+def get_app_dir():
+    if getattr(sys, "frozen", False):
+        # Запущено из EXE
+        return os.path.dirname(sys.executable)
+
+    # Запущено из Python
+    return os.path.dirname(os.path.abspath(__file__))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DB_NAME = BASE_DIR / "relay.db"
+DB_NAME = os.path.join(get_app_dir(), "relay.db")
 
 def get_connection():
     conn = sqlite3.connect(DB_NAME)
@@ -34,3 +45,4 @@ def init_db():
     conn.execute("INSERT OR IGNORE INTO settings (id) VALUES(1)")
     conn.commit()
     conn.close()
+    print("Database:", DB_NAME)
