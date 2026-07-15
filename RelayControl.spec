@@ -32,5 +32,5 @@ exe = EXE(
     a.datas,
     [],
     name='RelayControl',
-    console=False,
+    console=True,
 )

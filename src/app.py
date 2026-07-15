@@ -3,12 +3,17 @@ import requests
 
 from src.database import init_db, get_connection
 import os
+import sys
 
-BASE_DIR = os.path.dirname(__file__)
+def resource_path(relative):
+    if getattr(sys, "frozen", False):
+        return os.path.join(sys._MEIPASS, relative)
+
+    return os.path.join(os.path.dirname(__file__), relative)
 
 app = Flask(
     __name__,
-    template_folder=os.path.join(BASE_DIR, "templates")
+    template_folder=resource_path("templates")
 )
 
 # -----------------------------------------------------------------------------
