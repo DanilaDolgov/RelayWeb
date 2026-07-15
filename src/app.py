@@ -11,9 +11,12 @@ def resource_path(relative):
 
     return os.path.join(os.path.dirname(__file__), relative)
 
+
 app = Flask(
     __name__,
-    template_folder=resource_path("templates")
+    template_folder=resource_path("templates"),
+    static_folder=resource_path("static"),
+    static_url_path="/static"
 )
 
 # -----------------------------------------------------------------------------
